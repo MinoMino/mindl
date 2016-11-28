@@ -1,6 +1,7 @@
 downloads/
 Godeps/
 bin/
+dist/
 sample/
 notes.txt
 *.sublime-project
