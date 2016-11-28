@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"image/jpeg"
 	"image/png"
 	"io/ioutil"
 	"net/http"
@@ -88,8 +89,14 @@ func (bl *BookLive) Options() []plugins.Option {
 
 func (bl *BookLive) DownloadGenerator(url string) (dlgen func() plugins.Downloader, length int) {
 	// Initialization.
+	var ext string
 	cid, volume := bl.getCidAndVolume(url)
 	opts := plugins.OptionsToMap(bl.options)
+	if opts["Lossless"].(bool) {
+		ext = "png"
+	} else {
+		ext = "jpg"
+	}
 	client := plugins.NewHTTPClient(20)
 	bl.login(client, opts["Username"].(string), opts["Password"].(string))
 	api := binb.NewApi(urlApi, cid, client, nil)
@@ -122,13 +129,24 @@ func (bl *BookLive) DownloadGenerator(url string) (dlgen func() plugins.Download
 			}
 
 			img, err := api.Descrambler.Descramble(api.Pages[n], buf)
-			buf.Reset()
-			w, err := rep.FileWriter(filepath.Join(dir, fmt.Sprintf("%04d.png", n+1)), false)
-			if err != nil {
-				panic(err)
+			path := filepath.Join(dir, fmt.Sprintf("%04d.%s", n+1, ext))
+			if opts["Lossless"].(bool) {
+				// Save as PNG.
+				w, err := rep.FileWriter(path, false)
+				if err != nil {
+					panic(err)
+				}
+				defer w.Close()
+				png.Encode(w, img)
+			} else {
+				// Save as JPEG.
+				w, err := rep.FileWriter(path, false)
+				if err != nil {
+					panic(err)
+				}
+				defer w.Close()
+				jpeg.Encode(w, img, &jpeg.Options{Quality: opts["JPEGQuality"].(int)})
 			}
-			defer w.Close()
-			png.Encode(w, img)
 
 			return nil
 		}
