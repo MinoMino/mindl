@@ -213,7 +213,9 @@ func (ebj *EBookJapan) DownloadGenerator(url string) (dlgen func() plugins.Downl
 					if err != nil {
 						panic(err)
 					}
-					jpeg.Encode(w, img, &jpeg.Options{Quality: opts["JPEGQuality"].(int)})
+					if jpeg.Encode(w, img, &jpeg.Options{Quality: opts["JPEGQuality"].(int)}); err != nil {
+						panic(err)
+					}
 					w.Close()
 				}
 			}
