@@ -59,3 +59,9 @@ If you do not own the book, it will instead download the trial pages.
 The URLs handled by this plugin:
 * Product pages: `https://booklive.jp/product/index/title_id/[...]/vol_no/[...]`
 * Reader: `https://booklive.jp/bviewer/?cid=[...]&rurl=[...]`
+
+# License
+mindl is licensed under AGPLv3. Refer to `LICENSE` for details.
+
+Refer to the respective licenses and `THIRD-PARTY-NOTICES` for the code under the `vendor` directory
+and third-party libraries used.

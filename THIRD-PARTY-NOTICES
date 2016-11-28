@@ -1,0 +1,19 @@
+This document contains the list of Third Party Software included with mindl, along with the license information.
+
+In the event that I forget to list a required notice, please get in touch with me on mino@minomino.org.
+
+Go - https://golang.org/
+  License: BSD-like
+  Reference: https://golang.org/LICENSE
+
+Agouti - http://agouti.org/
+  License: MIT
+  Reference: https://raw.githubusercontent.com/sclevine/agouti/master/LICENSE
+
+logrus
+  License: MIT
+  Reference: https://github.com/Sirupsen/logrus/blob/master/LICENSE
+
+logrus-custom-formatter
+  License: MIT
+  Reference: https://github.com/Robpol86/logrus-custom-formatter/blob/master/LICENSE
