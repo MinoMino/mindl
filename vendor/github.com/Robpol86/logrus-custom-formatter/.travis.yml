@@ -1,0 +1,20 @@
+# Configure.
+env: WHAT=tests
+go:
+  - 1.7.3
+language: go
+matrix:
+  include:
+    - go: 1.7.3
+      env: WHAT=Example from doc.go
+      install: make $GOPATH/src/local/main.go && cd $(dirname $_)
+      script: go run main.go
+      after_success:
+        - echo
+sudo: false
+
+# Run.
+install: make bootstrap
+script: make
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

@@ -1,0 +1,8 @@
+downloads/
+Godeps/
+bin/
+sample/
+notes.txt
+*.sublime-project
+*.sublime-workspace
+.DS_Store

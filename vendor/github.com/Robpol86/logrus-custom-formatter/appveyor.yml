@@ -1,0 +1,17 @@
+# Configure.
+clone_folder: C:\gocode\src\github.com\$(APPVEYOR_ACCOUNT_NAME)\$(APPVEYOR_PROJECT_NAME)
+environment:
+  GOPATH: C:\gocode
+  PATH: C:\msys64\usr\bin;C:\msys64\mingw32\bin;%GOPATH%\bin;%PATH%
+  matrix:
+    - WHAT: tests
+    - WHAT: Example from doc.go
+
+# Run.
+build_script:
+  - IF "%WHAT%" EQU "tests" make bootstrap
+  - IF "%WHAT%" NEQ "tests" make %GOPATH%\src\local\main.go && cd %GOPATH%\src\local
+test_script:
+  - IF "%WHAT%" EQU "tests" make
+  - IF "%WHAT%" NEQ "tests" go run main.go
+on_success: IF "%WHAT%" EQU "tests" curl -s https://codecov.io/bash |bash
