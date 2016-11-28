@@ -137,7 +137,9 @@ func (bl *BookLive) DownloadGenerator(url string) (dlgen func() plugins.Download
 					panic(err)
 				}
 				defer w.Close()
-				png.Encode(w, img)
+
+				enc := png.Encoder{CompressionLevel: png.BestCompression}
+				return enc.Encode(w, img)
 			} else {
 				// Save as JPEG.
 				w, err := rep.FileWriter(path, false)
@@ -145,7 +147,7 @@ func (bl *BookLive) DownloadGenerator(url string) (dlgen func() plugins.Download
 					panic(err)
 				}
 				defer w.Close()
-				jpeg.Encode(w, img, &jpeg.Options{Quality: opts["JPEGQuality"].(int)})
+				return jpeg.Encode(w, img, &jpeg.Options{Quality: opts["JPEGQuality"].(int)})
 			}
 
 			return nil
