@@ -26,23 +26,8 @@ import (
 	"strings"
 	"time"
 
-	lcf "github.com/Robpol86/logrus-custom-formatter"
 	log "github.com/Sirupsen/logrus"
 )
-
-// Global slice of Plugin objects. As much as I'd love
-// to be able to omit this, Go just doesn't let me.
-// Could explore using the -X linker flag to set this.
-var Plugins = [...]Plugin{
-	&dummy,
-	&booklive,
-	&ebj,
-}
-
-func init() {
-	template := "%[shortLevelName]s[%04[relativeCreated]d] %-45[message]s%[fields]s\n"
-	log.SetFormatter(lcf.NewFormatter(template, nil))
-}
 
 /*
    ==================================================
