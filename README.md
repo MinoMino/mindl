@@ -9,6 +9,23 @@ Open an issue here or send me an e-mail about it. I cannot promise a plugin that
 scrambled because reverse engineering heavily obfuscated JavaScript can be hard and very time consuming, but the PhantomJS approach is
 usually fairly easy in contrast.
 
+**See the [releases](https://github.com/MinoMino/mindl/releases) for binaries. For plugins that require PhantomJS, get it [http://phantomjs.org/download.html](here) and place the executable in your working directory or in the PATH environment variable.**
+
+# Building
+Linux:
+```
+go get github.com/MinoMino/mindl
+cd $GOPATH/src/github.com/MinoMino/mindl
+make
+```
+
+Windows (with MSYS binaries in PATH):
+```
+go get github.com/MinoMino/mindl
+cd %GOPATH%\src\github.com\MinoMino\mindl
+make
+```
+
 ## Usage
 ```
 Usage of mindl:
@@ -22,7 +39,7 @@ Usage of mindl:
 
 ### Example
 ```
-mino$ mindl -d "https://br.ebookjapan.jp/br/reader/viewer/view.html?sessionid=[...]"
+mino$ mindl -d -o jpegquality=80 "https://br.ebookjapan.jp/br/reader/viewer/view.html?sessionid=[...]"
 INFO[0000] Starting download using "EBookJapan"...
 INFO[0000] Starting PhantomJS...
 INFO[0001] Opening the reader...
