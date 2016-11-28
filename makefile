@@ -14,13 +14,20 @@ else
 	EXT :=
 endif
 
-BUILDFLAGS = -ldflags="-X main.version=${VERSION}-${BRANCH}"
+BUILDFLAGS := -ldflags="-w -s -X main.version=${VERSION}-${BRANCH}"
+DEBUGBUILDFLAGS := -ldflags="-X main.version=${VERSION}-${BRANCH}"
 
 all: build
 
 build:
 	@mkdir -p ${OUTDIR}
 	go build -i -o ${OUT} ${BUILDFLAGS} ${PKG}
+	@echo "Done!"
+	@echo "The executable can be found in: ${OUT}"
+
+build-debug:
+	@mkdir -p ${OUTDIR}
+	go build -i -o ${OUT} ${DEBUGBUILDFLAGS} ${PKG}
 	@echo "Done!"
 	@echo "The executable can be found in: ${OUT}"
 
@@ -94,4 +101,4 @@ build-windows64: distdir
 	@$(call ARCHIVECALL,zip,windows64,.exe)
 	@$(call DISTCLEANCALL,.exe)
 
-.PHONY: run build static vet lint dist build-osx32 build-osx64 build-linux32 build-linux64 build-windows32 build-windows64
+.PHONY: run build build-debug static vet lint dist build-osx32 build-osx64 build-linux32 build-linux64 build-windows32 build-windows64
