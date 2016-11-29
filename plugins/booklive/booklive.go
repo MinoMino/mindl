@@ -149,8 +149,6 @@ func (bl *BookLive) DownloadGenerator(url string) (dlgen func() plugins.Download
 				defer w.Close()
 				return jpeg.Encode(w, img, &jpeg.Options{Quality: opts["JPEGQuality"].(int)})
 			}
-
-			return nil
 		}
 	}
 	return
