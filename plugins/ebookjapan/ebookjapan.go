@@ -152,11 +152,7 @@ func (ebj *EBookJapan) DownloadGenerator(url string) (dlgen func() plugins.Downl
 		once = true
 		return func(n int, rep plugins.Reporter) error {
 			// Make sure we stop the driver before we exit.
-			defer func() {
-				if err := driver.Stop(); err != nil {
-					panic("Failed to stop WebDriver: " + err.Error())
-				}
-			}()
+			defer driver.Stop()
 
 			for i := 0; i < length; i++ {
 				// Prefetch pages before we start polling.
