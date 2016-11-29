@@ -123,6 +123,10 @@ func NewPostFormRequest(url string, data url.Values) *http.Request {
 // instead of opening files inside the plugin allows the download manager
 // to control the flow of downloads (e.g. pausing, aborting), track download
 // speeds, stay aware of downloaded files for further processing, and so on.
+//
+// All paths used to save files with must relative and be in a directory.
+// If the user wants to have the files zipped, all the top-level directories
+// will be zipped.
 type Reporter interface {
 	// Should be used when you have something you need to download, but not
 	// actually something you want the manager to save and count as part of

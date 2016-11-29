@@ -138,7 +138,7 @@ func (bl *BookLive) DownloadGenerator(url string) (dlgen func() plugins.Download
 				}
 				defer w.Close()
 
-				enc := png.Encoder{CompressionLevel: png.BestCompression}
+				enc := png.Encoder{}
 				return enc.Encode(w, img)
 			} else {
 				// Save as JPEG.
