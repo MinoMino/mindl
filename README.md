@@ -9,9 +9,21 @@ Open an issue here or send me an e-mail about it. I cannot promise a plugin that
 scrambled because reverse engineering heavily obfuscated JavaScript can be hard and very time consuming, but the PhantomJS approach is
 usually fairly easy in contrast.
 
-**See the [releases](https://github.com/MinoMino/mindl/releases) for binaries. For plugins that require PhantomJS, get it [http://phantomjs.org/download.html](here) and place the executable in your working directory or in the PATH environment variable.**
+## Installation
+The easiest way is to simply use the precompiled binaries:
+  1. Get the archive that corresponds to your OS [here](https://github.com/MinoMino/mindl/releases/latest). Windows, Linux and Mac is supported.
+  2. Extract the archive wherever you want.
+  3. If a plugin you're using needs PhantomJS (e.g. EBookJapan), get it [here](http://phantomjs.org/download.html) and put the executable in the same directory as mindl. The executable is called `phantomjs.exe` on Windows and just `phantomjs` for the others.
+  4. Just run mindl from the command line and you're good to go!
 
-# Building
+If you want to be able to run mindl from anywhere and not just the directory with the executable, just add said directory to your
+PATH environment variable.
+
+## Building
+This section is only for those who wish to build mindl from source.
+
+Make sure you have [Go](https://golang.org/dl/) installed first, then follow the below instructions:
+
 Linux:
 ```
 go get github.com/MinoMino/mindl
@@ -19,7 +31,7 @@ cd $GOPATH/src/github.com/MinoMino/mindl
 make
 ```
 
-Windows (with MSYS binaries in PATH):
+Windows (with [MSYS](http://www.mingw.org/wiki/MSYS) binaries in PATH):
 ```
 go get github.com/MinoMino/mindl
 cd %GOPATH%\src\github.com\MinoMino\mindl
@@ -29,12 +41,13 @@ make
 ## Usage
 ```
 Usage of mindl:
-  -d, --defaults             Set to use default values for options whenever possible. No effect if --no-prompt is on.
-  -D, --directory string     The directory in which to save the downloaded files. (default "downloads/")
-  -n, --no-prompt            Set to turn off prompts for options and instead throw an error if a required option is left unset.
-  -o, --option key=value     Options in a key=value format passed to plugins.
-  -v, --verbose              Set to display debug messages.
-  -w, --workers int          The number of workers to use. (default 10)
+  -d, --defaults           Set to use default values for options whenever possible. No effect if --no-prompt is on.
+  -D, --directory string   The directory in which to save the downloaded files. (default "downloads/")
+  -n, --no-prompt          Set to turn off prompts for options and instead throw an error if a required option is left unset.
+  -o, --option key=value   Options in a key=value format passed to plugins.
+  -v, --verbose            Set to display debug messages.
+  -w, --workers int        The number of workers to use. (default 10)
+  -z, --zip                Set to ZIP the files after the download finishes.
 ```
 
 ### Example
