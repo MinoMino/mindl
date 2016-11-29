@@ -119,6 +119,11 @@ func (ebj *EBookJapan) DownloadGenerator(url string) (dlgen func() plugins.Downl
 		panic(err)
 	}
 
+	// Remove the canvases on the reader to reduce memory footprint.
+	if err := page.RunScript(reduceMemoryScript, nil, nil); err != nil {
+		panic(err)
+	}
+
 	// An slice of bools indicating whether or not a page is being prefetched.
 	prefetched := make([]bool, length)
 	prefetchCount := opts["PrefetchCount"].(int)
