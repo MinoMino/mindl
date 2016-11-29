@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"image"
 	"image/jpeg"
-	_ "image/png"
+	"image/png"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -191,24 +191,33 @@ func (ebj *EBookJapan) DownloadGenerator(url string) (dlgen func() plugins.Downl
 					return ErrEBJNoData
 				}
 
-				// We have the page in base64, so all we need to do is decode and save.
+				// We have the page in base64, so all we need to do is decode it.
 				dataReader := strings.NewReader(data[strings.Index(data, ",")+1:])
 				dec := base64.NewDecoder(base64.StdEncoding, dataReader)
 				path := filepath.Join(dir, fmt.Sprintf("%04d.%s", i+1, ext))
+				// Further decode the decoded data as an image.
+				img, _, err := image.Decode(dec)
+				if err != nil {
+					return err
+				}
+				// Prepare to write a file.
+				w, err := rep.FileWriter(path, false)
+				if err != nil {
+					panic(err)
+				}
 
 				if opts["Lossless"].(bool) {
-					_, err := rep.SaveData(path, dec, false)
-					if err != nil {
-						return err
+					// The data we got from the canvas is already a PNG file, but it doesn't
+					// use compression at all from the looks of it. Re-encoding it massively
+					// reduces file size, so it's worth the trouble.
+					enc := png.Encoder{}
+					if enc.Encode(w, img); err != nil {
+						panic(err)
 					}
 				} else {
 					// Save as JPEG. We could theoretically just get the file as a
 					// JPEG from the canvas, but I trust this encoder more in every
 					// aspect. Could still be worth to compare speeds, though.
-					img, _, err := image.Decode(dec)
-					if err != nil {
-						return err
-					}
 					w, err := rep.FileWriter(path, false)
 					if err != nil {
 						panic(err)
@@ -216,8 +225,8 @@ func (ebj *EBookJapan) DownloadGenerator(url string) (dlgen func() plugins.Downl
 					if jpeg.Encode(w, img, &jpeg.Options{Quality: opts["JPEGQuality"].(int)}); err != nil {
 						panic(err)
 					}
-					w.Close()
 				}
+				w.Close()
 			}
 
 			return nil
