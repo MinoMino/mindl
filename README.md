@@ -41,12 +41,13 @@ make
 ## Usage
 ```
 Usage of mindl:
-  -d, --defaults             Set to use default values for options whenever possible. No effect if --no-prompt is on.
-  -D, --directory string     The directory in which to save the downloaded files. (default "downloads/")
-  -n, --no-prompt            Set to turn off prompts for options and instead throw an error if a required option is left unset.
-  -o, --option key=value     Options in a key=value format passed to plugins.
-  -v, --verbose              Set to display debug messages.
-  -w, --workers int          The number of workers to use. (default 10)
+  -d, --defaults           Set to use default values for options whenever possible. No effect if --no-prompt is on.
+  -D, --directory string   The directory in which to save the downloaded files. (default "downloads/")
+  -n, --no-prompt          Set to turn off prompts for options and instead throw an error if a required option is left unset.
+  -o, --option key=value   Options in a key=value format passed to plugins.
+  -v, --verbose            Set to display debug messages.
+  -w, --workers int        The number of workers to use. (default 10)
+  -z, --zip                Set to ZIP the files after the download finishes.
 ```
 
 ### Example
