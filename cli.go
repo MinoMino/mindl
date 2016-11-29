@@ -18,6 +18,7 @@ package main
 
 import (
 	"errors"
+	"path/filepath"
 	//"flag"
 	"fmt"
 	"os"
@@ -80,11 +81,11 @@ func (opt *OptionsFlag) Type() string {
 }
 
 var (
-	options                     OptionsFlag
-	workers                     int
-	verbose, defaults, noprompt bool
-	directory                   string
-	urls                        []string
+	options                            OptionsFlag
+	workers                            int
+	verbose, defaults, noprompt, zipit bool
+	dldir                              string
+	urls                               []string
 )
 
 func init() {
@@ -98,7 +99,9 @@ func init() {
 		"Set to use default values for options whenever possible. No effect if --no-prompt is on.")
 	flag.BoolVarP(&noprompt, "no-prompt", "n", false,
 		"Set to turn off prompts for options and instead throw an error if a required option is left unset.")
-	flag.StringVarP(&directory, "directory", "D", "downloads/",
+	flag.BoolVarP(&zipit, "zip", "z", false,
+		"Set to ZIP the files after the download finishes.")
+	flag.StringVarP(&dldir, "directory", "D", "downloads/",
 		"The directory in which to save the downloaded files.")
 }
 
@@ -130,6 +133,8 @@ func main() {
 	if verbose {
 		log.SetLevel(log.DebugLevel)
 	}
+	// Ensure the path uses os.PathSeparator and ends with one.
+	dldir = strings.TrimSuffix(filepath.FromSlash(dldir), string(os.PathSeparator)) + string(os.PathSeparator)
 
 	if flag.NArg() == 0 {
 		flag.Usage()
@@ -168,7 +173,7 @@ func main() {
 }
 
 func startDownloading(url string, plugin Plugin) {
-	dm := NewDownloadManager(plugin)
+	dm := NewDownloadManager(plugin, dldir)
 	lr, _ := minterm.NewLineReserver()
 	defer func() {
 		if r := recover(); r != nil {
@@ -197,7 +202,7 @@ func startDownloading(url string, plugin Plugin) {
 		}
 	}()
 
-	dls, err := dm.Download(url, workers)
+	dls, err := dm.Download(url, workers, zipit)
 	if err != nil {
 		log.Error(err)
 		return

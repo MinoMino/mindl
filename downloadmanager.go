@@ -17,12 +17,14 @@ package main
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import (
+	"archive/zip"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	. "github.com/MinoMino/mindl/plugins"
@@ -35,6 +37,9 @@ var permission = 0755
 
 var (
 	ErrNilGenerator = errors.New("DownloadGenerator() returned nil on first call.")
+	ErrNotRelative  = errors.New("Plugin did not return a relative file path.")
+	ErrNoParent     = errors.New("Plugin returned a file path without a parent directory.")
+	ErrNotFile      = errors.New("Plugin did not return the path to a file, but a directory.")
 )
 
 type IODataHandler func(data []byte) error
@@ -91,15 +96,17 @@ type DownloadReporter struct {
 	reportCallback IODataHandler
 	// Other callbacks.
 	callbacks []IODataHandler
+	dstdir    string
 	dirm      sync.Mutex
 }
 
 func (dr *DownloadReporter) FileWriter(dst string, report bool) (w io.WriteCloser, err error) {
-	if filepath.IsAbs(dst) {
-		return nil, fmt.Errorf("Not a relative path: %s", dst)
+	if err := dr.assertValidPath(dst); err != nil {
+		return nil, err
 	}
+
 	// Create the directories if we have to first.
-	dst = filepath.Join(directory, dst)
+	dst = filepath.Join(dr.dstdir, dst)
 	if err := dr.makeDirectories(dst); err != nil {
 		return nil, err
 	}
@@ -170,11 +177,12 @@ func (dr *DownloadReporter) copy(dst io.Writer, src io.Reader, report bool) (wri
 }
 
 func (dr *DownloadReporter) SaveData(dst string, src io.Reader, report bool) (int64, error) {
-	if filepath.IsAbs(dst) {
-		return 0, fmt.Errorf("Not a relative path: %s", dst)
+	if err := dr.assertValidPath(dst); err != nil {
+		return 0, err
 	}
+
 	// Create the directories if we have to first.
-	dst = filepath.Join(directory, dst)
+	dst = filepath.Join(dr.dstdir, dst)
 	if err := dr.makeDirectories(dst); err != nil {
 		return 0, err
 	}
@@ -195,8 +203,8 @@ func (dr *DownloadReporter) SaveData(dst string, src io.Reader, report bool) (in
 }
 
 func (dr *DownloadReporter) SaveFile(dst, src string) (int64, error) {
-	if filepath.IsAbs(dst) {
-		return 0, fmt.Errorf("Not a relative path: %s", dst)
+	if err := dr.assertValidPath(dst); err != nil {
+		return 0, err
 	}
 
 	// Make sure src exists and get its size.
@@ -206,7 +214,7 @@ func (dr *DownloadReporter) SaveFile(dst, src string) (int64, error) {
 	}
 
 	// Create the directories if we have to first.
-	dst = filepath.Join(directory, dst)
+	dst = filepath.Join(dr.dstdir, dst)
 	if err = dr.makeDirectories(dst); err != nil {
 		return 0, err
 	} else if err = os.Rename(src, dst); err != nil {
@@ -218,7 +226,7 @@ func (dr *DownloadReporter) SaveFile(dst, src string) (int64, error) {
 }
 
 func (dr *DownloadReporter) TempFile() (f *os.File, err error) {
-	f, err = ioutil.TempFile(filepath.Join(directory, ".tmp"), fmt.Sprintf("mindl-%s-", dr.plugin.Name()))
+	f, err = ioutil.TempFile(filepath.Join(dr.dstdir, ".tmp"), fmt.Sprintf("mindl-%s-", dr.plugin.Name()))
 	if err != nil {
 		log.WithField("path", f.Name()).Debugf("Temporary file created.")
 	}
@@ -243,9 +251,17 @@ func (dr *DownloadReporter) makeDirectories(path string) error {
 	return nil
 }
 
-func assertRelative(path string) error {
+// Asserts it's a relative path, that it's a file, and that it has at least one parent directory.
+func (dr *DownloadReporter) assertValidPath(path string) error {
 	if filepath.IsAbs(path) {
-		return fmt.Errorf("Not a relative path: %s", path)
+		return ErrNotRelative
+	}
+
+	dir, file := filepath.Split(path)
+	if dir == "" {
+		return ErrNoParent
+	} else if file == "" {
+		return ErrNotFile
 	}
 
 	return nil
@@ -254,19 +270,21 @@ func assertRelative(path string) error {
 // The manager itself.
 
 type DownloadManager struct {
-	progress *minprogress.ProgressBar
-	paths    []string
-	plugin   Plugin
-	m        sync.Mutex
+	progress  *minprogress.ProgressBar
+	paths     []string
+	plugin    Plugin
+	directory string
+	m         sync.Mutex
 }
 
-func NewDownloadManager(plugin Plugin) *DownloadManager {
+func NewDownloadManager(plugin Plugin, directory string) *DownloadManager {
 	return &DownloadManager{
-		plugin: plugin,
+		plugin:    plugin,
+		directory: directory,
 	}
 }
 
-func (dm *DownloadManager) Download(url string, maxWorkers int) ([]string, error) {
+func (dm *DownloadManager) Download(url string, maxWorkers int, zipit bool) ([]string, error) {
 	var dlCount int
 	dlgen, total := dm.plugin.DownloadGenerator(url)
 	if dlgen == nil {
@@ -334,6 +352,7 @@ func (dm *DownloadManager) Download(url string, maxWorkers int) ([]string, error
 						dm.progress.Report(n, len(data))
 						return nil
 					},
+					dstdir: dm.directory,
 				}
 				// Make sure we report we're done with the download regardless of what happens.
 				defer dm.progress.Done(n)
@@ -379,12 +398,19 @@ loop:
 				break loop
 			}
 		case path := <-got:
+			path = filepath.FromSlash(path)
 			dm.m.Lock()
 			dm.paths = append(dm.paths, path)
 			dm.m.Unlock()
 			// Report progress.
 			dm.progress.Progress(1)
 			log.Debug("Got file: " + path)
+		}
+	}
+
+	if zipit {
+		if _, err := dm.ZipDownloads(true); err != nil {
+			return dm.paths, err
 		}
 	}
 
@@ -405,4 +431,67 @@ func (dm *DownloadManager) ProgressString() string {
 	}
 
 	return res
+}
+
+// Zip top-level directories separately, then delete the directories after doing so if desired.
+func (dm *DownloadManager) ZipDownloads(deleteAfter bool) ([]string, error) {
+	// We zip every top-level directory separately.
+	files := make(map[string][]string) // files[topdir] = file
+	dm.m.Lock()
+	for _, file := range dm.paths {
+		split := strings.Split(strings.TrimPrefix(file, dm.directory), string(os.PathSeparator))
+		// len(split) >= 2 is guaranteed by DownloadReporter.
+		files[split[0]] = append(files[split[0]], strings.Join(split[1:], string(os.PathSeparator)))
+	}
+	dm.m.Unlock()
+
+	res := make([]string, 0, len(files))
+	for dir, filelist := range files {
+		path := filepath.Join(dm.directory, dir+".zip")
+		log.Infof("Zipping files to: %s", filepath.Base(path))
+		res = append(res, dir)
+		outf, err := os.Create(path)
+		if err != nil {
+			return nil, err
+		}
+
+		zipf := zip.NewWriter(outf)
+		for _, file := range filelist {
+			log.Debugf("  Zipping file: %s", file)
+			// The header flag 0x800 will indicate UTF-8 filenames, albeit not supported everywhere.
+			header := &zip.FileHeader{Name: filepath.ToSlash(file), Method: zip.Deflate, Flags: 0x800}
+			fw, err := zipf.CreateHeader(header)
+			if err != nil {
+				return nil, err
+			}
+
+			fr, err := os.Open(filepath.Join(dm.directory, dir, file))
+			if err != nil {
+				return nil, err
+			}
+			io.Copy(fw, fr)
+			if err := fr.Close(); err != nil {
+				return nil, err
+			}
+		}
+
+		if err := zipf.Close(); err != nil {
+			return nil, err
+		}
+		if err := outf.Close(); err != nil {
+			return nil, err
+		}
+	}
+
+	if deleteAfter {
+		for dir, _ := range files {
+			p := filepath.Join(dm.directory, dir)
+			log.Debugf("Deleting '%s'...", p)
+			if err := os.RemoveAll(p); err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return res, nil
 }
