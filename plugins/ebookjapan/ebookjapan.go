@@ -42,6 +42,8 @@ const (
 	// How many milliseconds to wait before polling again.
 	loadPolling = 250
 	dataPolling = 500
+	// How many pages we rip before we reopen the reader.
+	reopenCount = 50
 )
 
 var (
@@ -98,26 +100,9 @@ func (ebj *EBookJapan) DownloadGenerator(url string) (dlgen func() plugins.Downl
 		panic("Failed to start PhantomJS: " + err.Error())
 	}
 
-	page, err := driver.NewPage(agouti.Browser("firefox"))
-	if err != nil {
-		panic("Failed to open page: " + err.Error())
-	}
-
-	log.Info("Opening the reader...")
-	if err := page.Navigate(url); err != nil {
-		panic("Failed to navigate: " + err.Error())
-	}
-	hookAlert(page)
-
-	log.Info("Waiting for reader to load...")
-	if err := waitForLoad(page); err != nil {
-		panic(err)
-	}
-
-	// Main script runs here.
-	if err := page.RunScript(ripperScript, nil, &length); err != nil {
-		panic(err)
-	}
+	// Make a page, load the reader, then run the ripper script.
+	var page *agouti.Page
+	page, length = getReaderPage(driver, url, true)
 
 	// Remove the canvases on the reader to reduce memory footprint.
 	if err := page.RunScript(reduceMemoryScript, nil, nil); err != nil {
@@ -154,12 +139,34 @@ func (ebj *EBookJapan) DownloadGenerator(url string) (dlgen func() plugins.Downl
 			// Make sure we stop the driver before we exit.
 			defer driver.Stop()
 
+			var reopened bool
 			for i := 0; i < length; i++ {
+				// PhantomJS sucks and forces us to reopen the page every now and then
+				// or else it'll like 1.5 GB memory and eventually crash.
+				if i != 0 && i%reopenCount == 0 {
+					log.Info("Closing and reopening reader...")
+					// PhantomJS is shit and doesn't GC unless you close the page,
+					// so to reduce memory usage and prevent it from crashing we
+					// close the page and reopen it, run scripts again, etc. etc.
+					if err := page.Destroy(); err != nil {
+						log.Error("Failed to destroy the page.")
+						panic(err)
+					}
+
+					page, _ = getReaderPage(driver, url, false)
+					reopened = true
+				}
+
 				// Prefetch pages before we start polling.
 				for j := 0; j < prefetchCount && j+i < length; j++ {
-					// Skip if already prefetched.
+					// Skip if already prefetched and make sure we don't prefetch if we're
+					// reopening the reader soon.
 					if prefetched[i+j] {
 						continue
+					} else if !reopened && i != 0 && (i+j)%reopenCount == 0 {
+						break
+					} else if reopened {
+						reopened = false
 					}
 					log.Debugf("Prefetching page %d...", j+i+1)
 					// Asynchronously get pages.
@@ -255,6 +262,36 @@ func waitForLoad(page *agouti.Page) error {
 	}
 
 	return ErrEBJNoLoad
+}
+
+func getReaderPage(driver *agouti.WebDriver, url string, doLog bool) (*agouti.Page, int) {
+	page, err := driver.NewPage(agouti.Browser("firefox"))
+	if err != nil {
+		panic("Failed to open page: " + err.Error())
+	}
+
+	if doLog {
+		log.Info("Opening the reader...")
+	}
+	if err := page.Navigate(url); err != nil {
+		panic("Failed to navigate: " + err.Error())
+	}
+	hookAlert(page)
+
+	if doLog {
+		log.Info("Waiting for reader to load...")
+	}
+	if err := waitForLoad(page); err != nil {
+		panic(err)
+	}
+
+	// Main script runs here.
+	var length int
+	if err := page.RunScript(ripperScript, nil, &length); err != nil {
+		panic(err)
+	}
+
+	return page, length
 }
 
 func hookAlert(page *agouti.Page) {
