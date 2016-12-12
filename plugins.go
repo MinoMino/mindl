@@ -19,6 +19,7 @@ package main
 import (
 	"github.com/MinoMino/mindl/plugins"
 	"github.com/MinoMino/mindl/plugins/booklive"
+	"github.com/MinoMino/mindl/plugins/bookwalker"
 	"github.com/MinoMino/mindl/plugins/dummy"
 	ebj "github.com/MinoMino/mindl/plugins/ebookjapan"
 )
@@ -30,4 +31,5 @@ var Plugins = [...]plugins.Plugin{
 	&dummy.Plugin,
 	&booklive.Plugin,
 	&ebj.Plugin,
+	&bookwalker.Plugin,
 }
