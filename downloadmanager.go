@@ -393,6 +393,8 @@ loop:
 		select {
 		case err := <-done:
 			if err != nil {
+				log.Info("Cleaning up early due to an error...")
+				dm.plugin.Cleanup(err)
 				return nil, err
 			} else {
 				break loop
@@ -410,10 +412,14 @@ loop:
 
 	if zipit {
 		if _, err := dm.ZipDownloads(true); err != nil {
+			log.Info("Cleaning up early due to error while zipping...")
+			dm.plugin.Cleanup(err)
 			return dm.paths, err
 		}
 	}
 
+	log.Info("Cleaning up...")
+	dm.plugin.Cleanup(nil)
 	return dm.paths, nil
 }
 

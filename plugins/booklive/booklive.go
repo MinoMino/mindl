@@ -154,6 +154,10 @@ func (bl *BookLive) DownloadGenerator(url string) (dlgen func() plugins.Download
 	return
 }
 
+func (bl *BookLive) Cleanup(err error) {
+
+}
+
 func (bl *BookLive) login(client *http.Client, username, password string) {
 	// First we get a login token.
 	var token string

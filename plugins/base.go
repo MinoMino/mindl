@@ -355,4 +355,7 @@ type Plugin interface {
 	//
 	// See the Dummy plugin for an example implementation.
 	DownloadGenerator(url string) (dlgen func() Downloader, dls int)
+	// A method called by the download manager at the end. If an error caused the manager
+	// to abort, it is passed. Otherwise nil is passed.
+	Cleanup(error)
 }

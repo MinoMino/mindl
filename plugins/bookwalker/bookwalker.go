@@ -101,8 +101,6 @@ func (bw *BookWalker) DownloadGenerator(url string) (dlgen func() plugins.Downlo
 	cid := reBook.FindStringSubmatch(url)[1]
 	bw.client = plugins.NewHTTPClient(20)
 	bw.login(opts["Username"].(string), opts["Password"].(string))
-	bw.logout()
-	bw.login(opts["Username"].(string), opts["Password"].(string))
 
 	// Try to get a book session.
 	var err error
@@ -182,4 +180,8 @@ func (bw *BookWalker) DownloadGenerator(url string) (dlgen func() plugins.Downlo
 
 	}
 	return
+}
+
+func (bw *BookWalker) Cleanup(err error) {
+	bw.logout()
 }
