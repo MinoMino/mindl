@@ -25,8 +25,6 @@ var (
 )
 
 func (bw *BookWalker) login(username, password string) {
-	log.Debug("Logging in...")
-
 	r, err := bw.client.Do(plugins.NewPostFormRequestUA(urlLogin, plugins.IE11UserAgent,
 		url.Values{
 			"j_username":      {username},
@@ -47,8 +45,6 @@ func (bw *BookWalker) login(username, password string) {
 }
 
 func (bw *BookWalker) logout() {
-	log.Debug("Logging out...")
-
 	r, err := bw.client.Do(plugins.NewGetRequestUA(urlLogout, plugins.IE11UserAgent))
 	if err != nil {
 		log.Error(err)

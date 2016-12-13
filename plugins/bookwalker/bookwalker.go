@@ -19,7 +19,6 @@ package bookwalker
 import (
 	"bytes"
 	"fmt"
-	"image"
 	"image/jpeg"
 	"image/png"
 	"math/rand"
@@ -27,10 +26,12 @@ import (
 	"net/url"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/MinoMino/mindl/plugins"
 	log "github.com/Sirupsen/logrus"
+	"golang.org/x/text/unicode/norm"
 )
 
 var Plugin = BookWalker{
@@ -86,7 +87,6 @@ func (bw *BookWalker) Options() []plugins.Option {
 }
 
 func (bw *BookWalker) DownloadGenerator(url string) (dlgen func() plugins.Downloader, length int) {
-	log.SetLevel(log.DebugLevel)
 	// Initialization.
 	rand.Seed(time.Now().UnixNano())
 	var ext string
@@ -100,6 +100,7 @@ func (bw *BookWalker) DownloadGenerator(url string) (dlgen func() plugins.Downlo
 	// Make a client and log in.
 	cid := reBook.FindStringSubmatch(url)[1]
 	bw.client = plugins.NewHTTPClient(20)
+	log.Info("Logging in...")
 	bw.login(opts["Username"].(string), opts["Password"].(string))
 
 	// Try to get a book session.
@@ -109,6 +110,7 @@ func (bw *BookWalker) DownloadGenerator(url string) (dlgen func() plugins.Downlo
 		panic(err)
 	}
 	dir := bw.session.Title
+	dir = norm.NFKC.String(dir)
 
 	// Get content info.
 	bw.config, bw.content, err = bw.getContentInfo()
@@ -116,6 +118,9 @@ func (bw *BookWalker) DownloadGenerator(url string) (dlgen func() plugins.Downlo
 		panic(err)
 	}
 	length = len(bw.content)
+
+	// Initialize descrambler.
+	ds := descrambler{}
 
 	i := 0
 	// Generator.
@@ -144,11 +149,8 @@ func (bw *BookWalker) DownloadGenerator(url string) (dlgen func() plugins.Downlo
 					return err
 				}
 
-				img, _, err := image.Decode(buf)
-				if err != nil {
-					panic(err)
-				}
-				//img, err := api.Descrambler.Descramble(api.Pages[n], buf)
+				filePath := bw.content[n].FilePath + "/" + strconv.Itoa(p.Page.No)
+				img, err := ds.Descramble(filePath, buf, p.Page.DummyWidth, p.Page.DummyHeight)
 				path := filepath.Join(dir, fmt.Sprintf("%04d.%s", n+1, ext))
 				if opts["Lossless"].(bool) {
 					// Save as PNG.
@@ -183,5 +185,6 @@ func (bw *BookWalker) DownloadGenerator(url string) (dlgen func() plugins.Downlo
 }
 
 func (bw *BookWalker) Cleanup(err error) {
+	log.Info("Logging out...")
 	bw.logout()
 }
