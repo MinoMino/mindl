@@ -90,6 +90,21 @@ The URLs handled by this plugin:
 * Product pages: `https://booklive.jp/product/index/title_id/[...]/vol_no/[...]`
 * Reader: `https://booklive.jp/bviewer/?cid=[...]&rurl=[...]`
 
+### BookWalker
+Also directly interacts with the API, so it's very fast. If you've recently opened a book through
+your browser, log out of your account first. This is because BookWalker prevents you from opening
+books from two different browsers.
+
+**IMPORTANT**: Be very careful with how much you download. They seem to have some sort of threshold
+on the rate at which you download pages from their servers, and if you pass it, they can ban you.
+I do not know exactly what this threshold is, but you might want to run it with `--workers 1` in
+order to significantly slow down the downloading.
+
+##### Usage
+The URLs handled by this plugin:
+* Product pages: `https://bookwalker.jp/de[...]`
+  * Example: `https://bookwalker.jp/de476913de-9a40-4544-a759-10e59c4c3ec0/カカフカカ-1/`
+
 # License
 mindl is licensed under AGPLv3. Refer to `LICENSE` for details.
 
