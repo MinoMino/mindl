@@ -30,9 +30,9 @@ import (
 	"strconv"
 	"strings"
 
+	log "github.com/MinoMino/logrus"
 	"github.com/MinoMino/mindl/plugins"
 	"github.com/MinoMino/mindl/plugins/binb"
-	log "github.com/Sirupsen/logrus"
 	"golang.org/x/text/unicode/norm"
 )
 

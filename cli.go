@@ -27,10 +27,10 @@ import (
 
 	flag "github.com/spf13/pflag"
 
+	log "github.com/MinoMino/logrus"
+	lcf "github.com/MinoMino/logrus-custom-formatter"
 	. "github.com/MinoMino/mindl/plugins"
 	"github.com/MinoMino/minterm"
-	lcf "github.com/Robpol86/logrus-custom-formatter"
-	log "github.com/Sirupsen/logrus"
 )
 
 // Set by make on compilation.

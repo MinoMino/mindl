@@ -29,8 +29,8 @@ import (
 
 	. "github.com/MinoMino/mindl/plugins"
 
+	log "github.com/MinoMino/logrus"
 	"github.com/MinoMino/minprogress"
-	log "github.com/Sirupsen/logrus"
 )
 
 var permission = 0755
