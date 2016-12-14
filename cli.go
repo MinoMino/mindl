@@ -29,7 +29,7 @@ import (
 
 	log "github.com/MinoMino/logrus"
 	lcf "github.com/MinoMino/logrus-custom-formatter"
-	. "github.com/MinoMino/mindl/plugins"
+	"github.com/MinoMino/mindl/plugins"
 	"github.com/MinoMino/minterm"
 )
 
@@ -172,7 +172,7 @@ func main() {
 	}
 }
 
-func startDownloading(url string, plugin Plugin) {
+func startDownloading(url string, plugin plugins.Plugin) {
 	dm := NewDownloadManager(plugin, dldir)
 	lr, _ := minterm.NewLineReserver()
 	defer func() {
