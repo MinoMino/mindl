@@ -1,9 +1,0 @@
-package: github.com/Robpol86/logrus-custom-formatter
-import:
-- package: github.com/Sirupsen/logrus
-testImport:
-- package: github.com/stretchr/testify
-  subpackages:
-  - require
-- package: github.com/rifflock/lfshook
-  version: ~1.2.0
