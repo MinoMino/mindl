@@ -244,6 +244,10 @@ func (ebj *EBookJapan) DownloadGenerator(url string) (dlgen func() plugins.Downl
 	return
 }
 
+func (ebj *EBookJapan) Cleanup(err error) {
+
+}
+
 func waitForLoad(page *agouti.Page) error {
 	now := time.Now()
 	for time.Since(now).Seconds() < loadTimeout {

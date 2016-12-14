@@ -285,6 +285,14 @@ func NewDownloadManager(plugin Plugin, directory string) *DownloadManager {
 }
 
 func (dm *DownloadManager) Download(url string, maxWorkers int, zipit bool) ([]string, error) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Info("Cleaning up early due to a panic...")
+			dm.plugin.Cleanup(fmt.Errorf("%v", r))
+			panic(r)
+		}
+	}()
+
 	var dlCount int
 	dlgen, total := dm.plugin.DownloadGenerator(url)
 	if dlgen == nil {
@@ -393,6 +401,8 @@ loop:
 		select {
 		case err := <-done:
 			if err != nil {
+				log.Info("Cleaning up early due to an error...")
+				dm.plugin.Cleanup(err)
 				return nil, err
 			} else {
 				break loop
@@ -410,10 +420,14 @@ loop:
 
 	if zipit {
 		if _, err := dm.ZipDownloads(true); err != nil {
+			log.Info("Cleaning up early due to error while zipping...")
+			dm.plugin.Cleanup(err)
 			return dm.paths, err
 		}
 	}
 
+	log.Info("Cleaning up...")
+	dm.plugin.Cleanup(nil)
 	return dm.paths, nil
 }
 

@@ -36,7 +36,12 @@ import (
    ==================================================
 */
 
-const FirefoxUserAgent = "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)"
+const (
+	FirefoxUserAgent = "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)"
+	IE11UserAgent    = "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko"
+	ChromeUserAgent  = "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36"
+	SafariUserAgent  = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 (KHTML, like Gecko) Version/7.0.3 Safari/7046A194A"
+)
 
 // Implements the error interface.
 type ErrHTTPStatusCode struct {
@@ -89,24 +94,34 @@ func NewHTTPClient(timeout int) *http.Client {
 
 // Create a new GET request with a Firefox user agent.
 func NewGetRequest(url string) *http.Request {
+	return NewGetRequestUA(url, FirefoxUserAgent)
+}
+
+// Create a new GET request with a custom user agent.
+func NewGetRequestUA(url, userAgent string) *http.Request {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Error("Error while creating a new GET request.")
 		panic(err)
 	}
-	req.Header.Set("User-Agent", FirefoxUserAgent)
+	req.Header.Set("User-Agent", userAgent)
 
 	return req
 }
 
 // Create a new POST request with a Firefox user agent using form data.
 func NewPostFormRequest(url string, data url.Values) *http.Request {
+	return NewPostFormRequestUA(url, FirefoxUserAgent, data)
+}
+
+// Create a new POST request with a Firefox user agent using form data.
+func NewPostFormRequestUA(url, userAgent string, data url.Values) *http.Request {
 	req, err := http.NewRequest("POST", url, strings.NewReader(data.Encode()))
 	if err != nil {
 		log.Error("Error while creating a new POST request.")
 		panic(err)
 	}
-	req.Header.Set("User-Agent", FirefoxUserAgent)
+	req.Header.Set("User-Agent", userAgent)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	return req
@@ -342,4 +357,7 @@ type Plugin interface {
 	//
 	// See the Dummy plugin for an example implementation.
 	DownloadGenerator(url string) (dlgen func() Downloader, dls int)
+	// A method called by the download manager at the end. If an error caused the manager
+	// to abort, it is passed. Otherwise nil is passed.
+	Cleanup(error)
 }

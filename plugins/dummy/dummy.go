@@ -112,3 +112,7 @@ func (d *Dummy) DownloadGenerator(url string) (dlgen func() plugins.Downloader, 
 
 	return
 }
+
+func (d *Dummy) Cleanup(err error) {
+
+}
