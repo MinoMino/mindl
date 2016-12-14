@@ -30,11 +30,15 @@ import (
 	"strconv"
 	"strings"
 
-	log "github.com/MinoMino/logrus"
+	"github.com/MinoMino/mindl/logger"
 	"github.com/MinoMino/mindl/plugins"
 	"github.com/MinoMino/mindl/plugins/binb"
 	"golang.org/x/text/unicode/norm"
 )
+
+const name = "BookLive"
+
+var log = logger.GetLog(name)
 
 var (
 	ErrBookLiveUnknownCid  = errors.New("CID format not <title_id>_<volume>.")
@@ -72,7 +76,7 @@ type BookLive struct {
 }
 
 func (bl *BookLive) Name() string {
-	return "BookLive"
+	return name
 }
 
 func (bl *BookLive) Version() string {
@@ -182,7 +186,7 @@ func (bl *BookLive) login(client *http.Client, username, password string) {
 	}
 
 	// Then we login.
-	log.WithFields(log.Fields{"token": token,
+	log.WithFields(logger.Fields{"token": token,
 		"username": username}).Debug("Logging in...")
 	r, err = client.Do(plugins.NewPostFormRequest(urlLogin, url.Values{
 		"mail_addr": {username},

@@ -27,11 +27,13 @@ import (
 
 	flag "github.com/spf13/pflag"
 
-	log "github.com/MinoMino/logrus"
-	lcf "github.com/MinoMino/logrus-custom-formatter"
+	"github.com/MinoMino/mindl/logger"
 	"github.com/MinoMino/mindl/plugins"
 	"github.com/MinoMino/minterm"
 )
+
+// Main logger.
+var log = logger.GetLog("")
 
 // Set by make on compilation.
 var version = "UNSET"
@@ -105,34 +107,10 @@ func init() {
 		"The directory in which to save the downloaded files.")
 }
 
-// A cute little helper struct that forces the writer to
-// get the value of os.Stdout every time it writes.
-// Setting this as the output for the logger makes sure that
-// when we change os.Stdout with minterm.LineReserver, it'll
-// properly output through the replaced os.Stdout instead of
-// the actual one it saved during package initialization.
-type stdoutReferer struct {
-	stdout **os.File
-}
-
-func (std *stdoutReferer) Write(p []byte) (int, error) {
-	w := *std.stdout
-	return w.Write(p)
-}
-
-func init() {
-	std := &stdoutReferer{&os.Stdout}
-	log.SetOutput(std)
-	template := "%[shortLevelName]s[%04[relativeCreated]d] %-45[message]s%[fields]s\n"
-	log.SetFormatter(lcf.NewFormatter(template, nil))
-}
-
 func main() {
 	flag.Parse()
 	urls = flag.Args()
-	if verbose {
-		log.SetLevel(log.DebugLevel)
-	}
+	logger.Verbose(verbose)
 	// Ensure the path uses os.PathSeparator and ends with one.
 	dldir = strings.TrimSuffix(filepath.FromSlash(dldir), string(os.PathSeparator)) + string(os.PathSeparator)
 

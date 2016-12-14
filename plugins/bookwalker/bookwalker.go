@@ -29,10 +29,14 @@ import (
 	"strconv"
 	"time"
 
-	log "github.com/MinoMino/logrus"
+	"github.com/MinoMino/mindl/logger"
 	"github.com/MinoMino/mindl/plugins"
 	"golang.org/x/text/unicode/norm"
 )
+
+const name = "BookWalker"
+
+var log = logger.GetLog(name)
 
 var Plugin = BookWalker{
 	options: []plugins.Option{
@@ -62,6 +66,11 @@ var reReader = regexp.MustCompile(`^https?://booklive.jp/bviewer/\?cid=(?P<cid>[
 var reTokenSearch = regexp.MustCompile(`input type="hidden" name="token" value="(.+?)">`)
 var reProfile = regexp.MustCompile(`^https?://member.bookwalker.jp/app/03/my/profile`)
 
+func init() {
+	// Otherwise we have deterministic generation of the browser ID.
+	rand.Seed(time.Now().UnixNano())
+}
+
 type BookWalker struct {
 	options []plugins.Option
 	client  *http.Client
@@ -88,7 +97,6 @@ func (bw *BookWalker) Options() []plugins.Option {
 
 func (bw *BookWalker) DownloadGenerator(url string) (dlgen func() plugins.Downloader, length int) {
 	// Initialization.
-	rand.Seed(time.Now().UnixNano())
 	var ext string
 	opts := plugins.OptionsToMap(bw.options)
 	if opts["Lossless"].(bool) {

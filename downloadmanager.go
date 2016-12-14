@@ -29,7 +29,6 @@ import (
 
 	. "github.com/MinoMino/mindl/plugins"
 
-	log "github.com/MinoMino/logrus"
 	"github.com/MinoMino/minprogress"
 )
 

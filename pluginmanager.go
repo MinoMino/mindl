@@ -25,8 +25,6 @@ import (
 	"strings"
 
 	. "github.com/MinoMino/mindl/plugins"
-
-	log "github.com/MinoMino/logrus"
 )
 
 type PluginManager []Plugin

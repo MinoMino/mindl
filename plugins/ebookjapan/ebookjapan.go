@@ -28,11 +28,15 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/MinoMino/logrus"
+	"github.com/MinoMino/mindl/logger"
 	"github.com/MinoMino/mindl/plugins"
 	"github.com/sclevine/agouti"
 	"golang.org/x/text/unicode/norm"
 )
+
+const name = "eBookJapan"
+
+var log = logger.GetLog(name)
 
 const (
 	// How many seconds to wait for the page to load for.

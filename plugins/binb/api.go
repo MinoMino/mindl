@@ -33,8 +33,10 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/MinoMino/logrus"
+	"github.com/MinoMino/mindl/logger"
 )
+
+var log = logger.GetLog("BinB")
 
 const userAgent = "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)"
 

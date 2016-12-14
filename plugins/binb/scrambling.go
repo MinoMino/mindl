@@ -24,10 +24,10 @@ import (
 	"strconv"
 	"strings"
 
-	log "github.com/MinoMino/logrus"
-
 	_ "image/jpeg"
 	_ "image/png"
+
+	"github.com/MinoMino/mindl/logger"
 )
 
 var reType1Key = regexp.MustCompile("^=([0-9]+)-([0-9]+)([-+])([0-9]+)-([-_0-9A-Za-z]+)$")
@@ -94,7 +94,7 @@ type Descrambler struct {
 
 func NewDescrambler(ctbl, ptbl []string) (*Descrambler, error) {
 	if len(ctbl) != len(ptbl) {
-		log.WithFields(log.Fields{
+		log.WithFields(logger.Fields{
 			"ctbl": ctbl,
 			"ptbl": ptbl,
 		}).Debug("ctbl and ptbl sizes don't match.")
@@ -147,7 +147,7 @@ func (ds *Descrambler) init() error {
 				}
 			}
 		} else {
-			log.WithFields(log.Fields{
+			log.WithFields(logger.Fields{
 				"ctbl": ds.Ctbl[i],
 				"ptbl": ds.Ptbl[i],
 			}).Debug("Got unknown key type.")
@@ -157,7 +157,7 @@ func (ds *Descrambler) init() error {
 		if ds.keyType == typeUnset {
 			ds.keyType = newType
 		} else if ds.keyType != newType {
-			log.WithFields(log.Fields{
+			log.WithFields(logger.Fields{
 				"ctbl":      ds.Ctbl[i],
 				"ptbl":      ds.Ptbl[i],
 				"last_type": ds.keyType,
@@ -180,7 +180,7 @@ func (ds *Descrambler) processType1(i int) (*scrambleDataType1, error) {
 	p := reType1Key.FindStringSubmatch(ds.Ptbl[i])
 	if c == nil || p == nil || c[1] != p[1] || c[2] != p[2] ||
 		c[4] != p[4] || c[3] != "+" || p[3] != "-" {
-		log.WithFields(log.Fields{
+		log.WithFields(logger.Fields{
 			"ctbl": ds.Ctbl[i],
 			"ptbl": ds.Ptbl[i],
 		}).Debug("Type 1 key verification failed.")
@@ -191,7 +191,7 @@ func (ds *Descrambler) processType1(i int) (*scrambleDataType1, error) {
 	v, _ := strconv.Atoi(c[2])
 	padding, _ := strconv.Atoi(c[4])
 	if h > 8 || v > 8 || h*v > 64 {
-		log.WithFields(log.Fields{
+		log.WithFields(logger.Fields{
 			"h": h,
 			"v": v,
 		}).Debug("Invalid h and v values.")
@@ -202,7 +202,7 @@ func (ds *Descrambler) processType1(i int) (*scrambleDataType1, error) {
 	dst := p[5]
 	target_len := h + v + h*v
 	if len(src) != target_len || len(dst) != target_len {
-		log.WithFields(log.Fields{
+		log.WithFields(logger.Fields{
 			"h": h,
 			"v": v,
 		}).Debug("h and v do not match target length.")
@@ -232,7 +232,7 @@ func (ds *Descrambler) processType2(key string) (*scrambleDataType2, error) {
 	ndy, _ := strconv.Atoi(re[2])
 	data := re[3]
 	if len(data) != ndx*ndy*2 {
-		log.WithFields(log.Fields{
+		log.WithFields(logger.Fields{
 			"ndx":  ndx,
 			"ndy":  ndy,
 			"data": data,
@@ -364,7 +364,7 @@ func (ds *Descrambler) rectanglesType1(cIndex, pIndex, srcWidth, srcHeight int) 
 
 func (ds *Descrambler) rectanglesType2(cIndex, pIndex, srcWidth, srcHeight int) (*scrambleRectanglesCollection, error) {
 	if !(srcWidth >= 64 && srcHeight >= 64 && srcWidth*srcHeight >= 320*320) {
-		log.WithFields(log.Fields{
+		log.WithFields(logger.Fields{
 			"srcWidth":  srcWidth,
 			"srcHeight": srcHeight,
 		}).Debug("Invalid input image dimensions.")
