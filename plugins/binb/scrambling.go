@@ -24,7 +24,7 @@ import (
 	"strconv"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/MinoMino/logrus"
 
 	_ "image/jpeg"
 	_ "image/png"
