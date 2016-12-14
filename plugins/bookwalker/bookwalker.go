@@ -159,7 +159,12 @@ func (bw *BookWalker) DownloadGenerator(url string) (dlgen func() plugins.Downlo
 
 				filePath := bw.content[n].FilePath + "/" + strconv.Itoa(p.Page.No)
 				img, err := ds.Descramble(filePath, buf, p.Page.DummyWidth, p.Page.DummyHeight)
-				path := filepath.Join(dir, fmt.Sprintf("%04d.%s", n+1, ext))
+				var path string
+				if p.Page.No > 0 {
+					path = filepath.Join(dir, fmt.Sprintf("%04d-%d.%s", n+1, p.Page.No, ext))
+				} else {
+					path = filepath.Join(dir, fmt.Sprintf("%04d.%s", n+1, ext))
+				}
 				if opts["Lossless"].(bool) {
 					// Save as PNG.
 					w, err := rep.FileWriter(path, false)
