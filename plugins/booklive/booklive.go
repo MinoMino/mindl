@@ -67,9 +67,12 @@ const (
 
 var urlBookLive, _ = url.ParseRequestURI("https://booklive.jp/")
 
-var reBook = regexp.MustCompile(`^https?://booklive.jp/product/index/title_id/(?P<title_id>[0-9]+?)/vol_no/(?P<volume>[0-9]+?)$`)
-var reReader = regexp.MustCompile(`^https?://booklive.jp/bviewer/\?cid=(?P<cid>[_0-9]+)`)
-var reTokenSearch = regexp.MustCompile(`input type="hidden" name="token" value="(.+?)">`)
+var (
+	reBook        = regexp.MustCompile(`^https?://booklive.jp/product/index/title_id/(?P<title_id>[0-9]+?)/vol_no/(?P<volume>[0-9]+?)$`)
+	reReader      = regexp.MustCompile(`^https?://booklive.jp/bviewer/\?cid=(?P<cid>[_0-9]+)`)
+	reTokenSearch = regexp.MustCompile(`input type="hidden" name="token" value="(.+?)">`)
+	reTitleClean  = regexp.MustCompile(`.+?( ?\([0-9]+\)| ?[0-9]+巻)$`)
+)
 
 type BookLive struct {
 	options []plugins.Option
@@ -108,7 +111,14 @@ func (bl *BookLive) DownloadGenerator(url string) (dlgen func() plugins.Download
 		panic(err)
 	}
 	length = len(api.Pages)
-	dir := norm.NFD.String(fmt.Sprintf("%s 第%02d巻", api.ContentInfo.Title, volume))
+
+	// Clean up the title from the volume inserted by them, then apply it ourselves.
+	title := norm.NFKC.String(api.ContentInfo.Title)
+	re := reTitleClean.FindStringSubmatch(title)
+	if re != nil {
+		title = title[:len(title)-len(re[1])]
+	}
+	dir := fmt.Sprintf("%s 第%02d巻", title, volume)
 
 	i := 0
 	// Generator.
