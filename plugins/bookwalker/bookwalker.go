@@ -29,8 +29,8 @@ import (
 	"strconv"
 	"time"
 
+	log "github.com/MinoMino/logrus"
 	"github.com/MinoMino/mindl/plugins"
-	log "github.com/Sirupsen/logrus"
 	"golang.org/x/text/unicode/norm"
 )
 
