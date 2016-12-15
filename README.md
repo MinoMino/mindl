@@ -13,7 +13,7 @@ usually fairly easy in contrast.
 The easiest way is to simply use the precompiled binaries:
   1. Get the archive that corresponds to your OS [here](https://github.com/MinoMino/mindl/releases/latest). Windows, Linux and Mac is supported.
   2. Extract the archive wherever you want.
-  3. If a plugin you're using needs PhantomJS (e.g. EBookJapan), get it [here](http://phantomjs.org/download.html) and put the executable in the same directory as mindl. The executable is called `phantomjs.exe` on Windows and just `phantomjs` for the others.
+  3. If a plugin you're using needs PhantomJS (e.g. eBookJapan), get it [here](http://phantomjs.org/download.html) and put the executable in the same directory as mindl. The executable is called `phantomjs.exe` on Windows and just `phantomjs` for the others.
   4. Just run mindl from the command line and you're good to go!
 
 If you want to be able to run mindl from anywhere and not just the directory with the executable, just add said directory to your
@@ -52,12 +52,13 @@ Usage of mindl:
 
 ### Example
 ```
-mino$ mindl -d -o jpegquality=80 "https://br.ebookjapan.jp/br/reader/viewer/view.html?sessionid=[...]"
-INFO[0000] Starting download using "EBookJapan"...
-INFO[0000] Starting PhantomJS...
-INFO[0001] Opening the reader...
-INFO[0006] Waiting for reader to load...
-INFO[0133] Done! Got a total of 76 downloads.
+mino$ mindl -d -z -o username=my@email.com -o password=password123 https://bookwalker.jp/de[...]
+(00:18:05 INFO) Starting download using "BookWalker"...
+(00:18:05 INFO) [BookWalker] Logging in...
+(00:18:22 INFO) Zipping files to: SomeBook.zip
+(00:18:24 INFO) Cleaning up...
+(00:18:24 INFO) [BookWalker] Logging out...
+(00:18:27 INFO) Done! Got a total of 181 downloads.
 ```
 
 **Make sure you use double quotes around each URL, or the console will interpret the ampersands as multiple console commands
@@ -66,44 +67,10 @@ instead of part of the URL(s).**
 If the plugin requires any options to be configured, you can pass them with `-o` like in the above example, but you can
 also just run mindl without passing them and have it prompt you for them later.
 
-## Supported Sites
-### eBookJapan
-Uses PhantomJS to open the reader and download the pages. This approach is somewhat slow and CPU/RAM heavy, but
-they've done a good job at making it a pain in the ass to do it any other way.
-
-Note that since everything is bottlenecked through one instance of PhantomJS, the `--worker` flag doesn't do anything.
-Instead you can adjust the `PrefetchCount` option for some concurrency on the PhantomJS side. `PrefetchCount` has
-diminishing returns, so don't go too crazy.
-
-##### Usage
-Open the reader and you should get a URL like
-`https://br.ebookjapan.jp/br/reader/viewer/view.html?sessionid=[...]&keydata=[...]&shopID=eBookJapan`
-which is the one you need to pass to mindl. EBJ has protection against account sharing, so make sure
-you both get the URL *and* use mindl from the same IP address.
-
-### BookLive
-Directly interacts with the API and descrambles the images concurrently, so it's very fast and efficient.
-If you do not own the book, it will instead download the trial pages.
-
-##### Usage
-The URLs handled by this plugin:
-* Product pages: `https://booklive.jp/product/index/title_id/[...]/vol_no/[...]`
-* Reader: `https://booklive.jp/bviewer/?cid=[...]&rurl=[...]`
-
-### BookWalker
-Also directly interacts with the API, so it's very fast. If you've recently opened a book through
-your browser, log out of your account first. This is because BookWalker prevents you from opening
-books from two different browsers.
-
-**IMPORTANT**: Be very careful with how much you download. They seem to have some sort of threshold
-on the rate at which you download pages from their servers, and if you pass it, they can ban you.
-I do not know exactly what this threshold is, but you might want to run it with `--workers 1` in
-order to significantly slow down the downloading.
-
-##### Usage
-The URLs handled by this plugin:
-* Product pages: `https://bookwalker.jp/de[...]`
-  * Example: `https://bookwalker.jp/de476913de-9a40-4544-a759-10e59c4c3ec0/カカフカカ-1/`
+## Supported Services
+* [eBookJapan](https://github.com/MinoMino/mindl/wiki/Supported-Services#ebookjapan)
+* [BookLive](https://github.com/MinoMino/mindl/wiki/Supported-Services#booklive)
+* [BookWalker](https://github.com/MinoMino/mindl/wiki/Supported-Services#bookwalker) (**read before using**)
 
 # License
 mindl is licensed under AGPLv3. Refer to `LICENSE` for details.
