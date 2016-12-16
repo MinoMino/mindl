@@ -83,11 +83,11 @@ func (opt *OptionsFlag) Type() string {
 }
 
 var (
-	options                            OptionsFlag
-	workers                            int
-	verbose, defaults, noprompt, zipit bool
-	dldir                              string
-	urls                               []string
+	options                                          OptionsFlag
+	workers                                          int
+	verbose, defaults, noprompt, zipit, printVersion bool
+	dldir                                            string
+	urls                                             []string
 )
 
 func init() {
@@ -105,10 +105,17 @@ func init() {
 		"Set to ZIP the files after the download finishes.")
 	flag.StringVarP(&dldir, "directory", "D", "downloads/",
 		"The directory in which to save the downloaded files.")
+	flag.BoolVar(&printVersion, "version", false,
+		"Print the program version.")
 }
 
 func main() {
 	flag.Parse()
+	if printVersion {
+		fmt.Println(version)
+		os.Exit(0)
+	}
+
 	urls = flag.Args()
 	logger.Verbose(verbose)
 	// Ensure the path uses os.PathSeparator and ends with one.
