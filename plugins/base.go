@@ -327,6 +327,65 @@ func (opt *BoolOption) Comment() string {
 	return opt.C
 }
 
+// An option to force the download manager to either zip or not zip the directories
+// after the download finishes.
+type ForceZipOption struct {
+	BoolOption
+}
+
+func NewForceZipOption(force bool) *ForceZipOption {
+	return &ForceZipOption{
+		BoolOption{
+			V: force,
+		},
+	}
+}
+
+func (opt *ForceZipOption) Key() string {
+	return "!Zip"
+}
+
+func (opt *ForceZipOption) IsRequired() bool {
+	return false
+}
+
+func (opt *ForceZipOption) IsHidden() bool {
+	return true
+}
+
+func (opt *ForceZipOption) Comment() string {
+	return "Force the download manager to zip the directories after the download finishes."
+}
+
+// An option to force the number of workers used by
+type MaxWorkersOption struct {
+	IntOption
+}
+
+func NewForceMaxWorkersOption(workers int) *MaxWorkersOption {
+	return &MaxWorkersOption{
+		IntOption{
+			V: workers,
+		},
+	}
+}
+
+func (opt *MaxWorkersOption) Key() string {
+	return "!Workers"
+}
+
+func (opt *MaxWorkersOption) IsRequired() bool {
+	return false
+}
+
+func (opt *MaxWorkersOption) IsHidden() bool {
+	return true
+}
+
+func (opt *MaxWorkersOption) Comment() string {
+	return "Force the maximum number of workers to a certain number."
+}
+
 /*
    ==================================================
                          PLUGIN

@@ -35,10 +35,11 @@ import (
 var permission = 0755
 
 var (
-	ErrNilGenerator = errors.New("DownloadGenerator() returned nil on first call.")
-	ErrNotRelative  = errors.New("Plugin did not return a relative file path.")
-	ErrNoParent     = errors.New("Plugin returned a file path without a parent directory.")
-	ErrNotFile      = errors.New("Plugin did not return the path to a file, but a directory.")
+	ErrNilGenerator            = errors.New("DownloadGenerator() returned nil on first call.")
+	ErrNotRelative             = errors.New("Plugin did not return a relative file path.")
+	ErrNoParent                = errors.New("Plugin returned a file path without a parent directory.")
+	ErrNotFile                 = errors.New("Plugin did not return the path to a file, but a directory.")
+	ErrInvaidSpecialOptionType = errors.New("A special option was not of the expected type.")
 )
 
 type IODataHandler func(data []byte) error
@@ -291,6 +292,24 @@ func (dm *DownloadManager) Download(url string, maxWorkers int, zipit bool) ([]s
 			panic(r)
 		}
 	}()
+
+	special := GetSpecialOptions(dm.plugin)
+	if z, ok := special["Zip"]; ok {
+		if zipit, ok = z.(bool); !ok {
+			log.Error("Special option 'Zip' was not a bool.")
+			panic(ErrInvaidSpecialOptionType)
+		} else {
+			log.Warnf("This plugin forces the --zip flag to %v.", zipit)
+		}
+	}
+	if w, ok := special["Workers"]; ok {
+		if maxWorkers, ok = w.(int); !ok {
+			log.Error("Special option 'Workers' was not an int.")
+			panic(ErrInvaidSpecialOptionType)
+		} else {
+			log.Warnf("This plugin forces the --workers flag to %d.", maxWorkers)
+		}
+	}
 
 	var dlCount int
 	dlgen, total := dm.plugin.DownloadGenerator(url)

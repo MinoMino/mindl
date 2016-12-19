@@ -34,6 +34,7 @@ var (
 	ErrOutOfRange           = errors.New("Index out of range.")
 	ErrNoPlugins            = errors.New("No plugins to select from.")
 	ErrUnsetRequired        = errors.New("A required plugin option was not set and prompting is off.")
+	ErrRequiredHidden       = errors.New("A required plugin option is also hidden.")
 )
 
 func (pm *PluginManager) FindHandlers(urls []string) [][]Plugin {
@@ -100,6 +101,10 @@ func (pm *PluginManager) SetOptions(ps []Plugin, usropts map[string]string, defa
 			// If unset, populate the above maps.
 			if !set {
 				if plgopt.IsRequired() {
+					// An option can't be required and hidden.
+					if plgopt.IsHidden() {
+						return ErrRequiredHidden
+					}
 					unsetReq[p] = append(unsetReq[p], plgopt)
 				}
 
@@ -128,6 +133,11 @@ func (pm *PluginManager) SetOptions(ps []Plugin, usropts map[string]string, defa
 				name := pluginName(p)
 				fmt.Printf("The plugin \"%s\" has required option(s):\n", name)
 				for _, opt := range opts {
+					// Hidden options are never prompted.
+					if opt.IsHidden() {
+						continue
+					}
+
 					optionPrompt(opt)
 					log.WithField("plugin", name).Debugf("Set Option: %s = %s", opt.Key(), opt.Value())
 				}
@@ -138,6 +148,11 @@ func (pm *PluginManager) SetOptions(ps []Plugin, usropts map[string]string, defa
 				name := pluginName(p)
 				fmt.Printf("The plugin \"%s\" has option(s):\n", name)
 				for _, opt := range opts {
+					// Hidden options are never prompted.
+					if opt.IsHidden() {
+						continue
+					}
+
 					optionPrompt(opt)
 					log.WithField("plugin", name).Debugf("Set Option: %s = %s", opt.Key(), opt.Value())
 				}
@@ -193,4 +208,16 @@ func optionPrompt(opt Option) {
 
 func pluginName(p Plugin) string {
 	return strings.TrimSpace(p.Name() + " " + p.Version())
+}
+
+// Get all special options set by the plugin.
+func GetSpecialOptions(p Plugin) map[string]interface{} {
+	res := make(map[string]interface{})
+	for _, opt := range p.Options() {
+		if strings.HasPrefix(opt.Key(), "!") {
+			res[opt.Key()[1:]] = opt.Value()
+		}
+	}
+
+	return res
 }
