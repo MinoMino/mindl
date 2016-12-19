@@ -186,15 +186,16 @@ type Option interface {
 	// Set the value using user input.
 	Set(string) error
 	IsRequired() bool
+	IsHidden() bool
 	Comment() string
 }
 
 // A basic Option implementation that keeps all user
 // input as-is instead of trying to convert stuff.
 type StringOption struct {
-	K, V     string
-	Required bool
-	C        string
+	K, V             string
+	Required, Hidden bool
+	C                string
 }
 
 func (opt *StringOption) Key() string {
@@ -214,6 +215,10 @@ func (opt *StringOption) IsRequired() bool {
 	return opt.Required
 }
 
+func (opt *StringOption) IsHidden() bool {
+	return opt.Hidden
+}
+
 func (opt *StringOption) Comment() string {
 	return opt.C
 }
@@ -221,10 +226,10 @@ func (opt *StringOption) Comment() string {
 // An implementation of Option that tries to convert
 // the user input into an integer.
 type IntOption struct {
-	K        string
-	V        int
-	Required bool
-	C        string
+	K                string
+	V                int
+	Required, Hidden bool
+	C                string
 }
 
 func (opt *IntOption) Key() string {
@@ -244,6 +249,10 @@ func (opt *IntOption) IsRequired() bool {
 	return opt.Required
 }
 
+func (opt *IntOption) IsHidden() bool {
+	return opt.Hidden
+}
+
 func (opt *IntOption) Comment() string {
 	return opt.C
 }
@@ -251,10 +260,10 @@ func (opt *IntOption) Comment() string {
 // An implementation of Option that tries to convert
 // the user input into a float64.
 type FloatOption struct {
-	K        string
-	V        float64
-	Required bool
-	C        string
+	K                string
+	V                float64
+	Required, Hidden bool
+	C                string
 }
 
 func (opt *FloatOption) Key() string {
@@ -274,6 +283,10 @@ func (opt *FloatOption) IsRequired() bool {
 	return opt.Required
 }
 
+func (opt *FloatOption) IsHidden() bool {
+	return opt.Hidden
+}
+
 func (opt *FloatOption) Comment() string {
 	return opt.C
 }
@@ -283,10 +296,10 @@ func (opt *FloatOption) Comment() string {
 // it accepts 1, t, T, TRUE, true, True, 0, f, F, FALSE,
 // false, False.
 type BoolOption struct {
-	K        string
-	V        bool
-	Required bool
-	C        string
+	K                string
+	V                bool
+	Required, Hidden bool
+	C                string
 }
 
 func (opt *BoolOption) Key() string {
@@ -304,6 +317,10 @@ func (opt *BoolOption) Set(v string) (err error) {
 
 func (opt *BoolOption) IsRequired() bool {
 	return opt.Required
+}
+
+func (opt *BoolOption) IsHidden() bool {
+	return opt.Hidden
 }
 
 func (opt *BoolOption) Comment() string {
