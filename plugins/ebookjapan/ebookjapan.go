@@ -58,6 +58,7 @@ var (
 
 var Plugin = EBookJapan{
 	[]plugins.Option{
+		plugins.NewForceMaxWorkersOption(1),
 		&plugins.BoolOption{K: "Lossless", V: false, Required: false,
 			C: "If set to true, save as PNG. Original images are in JPEG, so you can't escape some artifacts even with this on."},
 		&plugins.IntOption{K: "JPEGQuality", V: 95,
