@@ -23,6 +23,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -32,6 +33,13 @@ import (
 	"github.com/MinoMino/minprogress"
 )
 
+// Create a channel to catch interrupts and exit cleanly.
+var interrupt = make(chan os.Signal, 1)
+
+func init() {
+	signal.Notify(interrupt, os.Interrupt)
+}
+
 var permission = 0755
 
 var (
@@ -40,6 +48,7 @@ var (
 	ErrNoParent                = errors.New("Plugin returned a file path without a parent directory.")
 	ErrNotFile                 = errors.New("Plugin did not return the path to a file, but a directory.")
 	ErrInvaidSpecialOptionType = errors.New("A special option was not of the expected type.")
+	ErrInterrupted             = errors.New("The download failed to finish because of an interrupt.")
 )
 
 type IODataHandler func(data []byte) error
@@ -417,6 +426,10 @@ func (dm *DownloadManager) Download(url string, maxWorkers int, zipit bool) ([]s
 loop:
 	for {
 		select {
+		case <-interrupt:
+			log.Info("Interrupted! Cleaning up...")
+			dm.plugin.Cleanup(ErrInterrupted)
+			return nil, ErrInterrupted
 		case err := <-done:
 			if err != nil {
 				log.Info("Cleaning up early due to an error...")
