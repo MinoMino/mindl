@@ -293,7 +293,7 @@ func NewDownloadManager(plugin Plugin, directory string) *DownloadManager {
 	}
 }
 
-func (dm *DownloadManager) Download(url string, maxWorkers int, zipit bool) ([]string, error) {
+func (dm *DownloadManager) Download(url string, maxWorkers int, zipit, override bool) ([]string, error) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Info("Cleaning up early due to a panic...")
@@ -302,21 +302,23 @@ func (dm *DownloadManager) Download(url string, maxWorkers int, zipit bool) ([]s
 		}
 	}()
 
-	special := GetSpecialOptions(dm.plugin)
-	if z, ok := special["Zip"]; ok {
-		if zipit, ok = z.(bool); !ok {
-			log.Error("Special option 'Zip' was not a bool.")
-			panic(ErrInvaidSpecialOptionType)
-		} else {
-			log.Warnf("This plugin forces the --zip flag to %v.", zipit)
+	if !override {
+		special := GetSpecialOptions(dm.plugin)
+		if z, ok := special["Zip"]; ok {
+			if zipit, ok = z.(bool); !ok {
+				log.Error("Special option 'Zip' was not a bool.")
+				panic(ErrInvaidSpecialOptionType)
+			} else {
+				log.Warnf("This plugin forces the --zip flag to %v.", zipit)
+			}
 		}
-	}
-	if w, ok := special["Workers"]; ok {
-		if maxWorkers, ok = w.(int); !ok {
-			log.Error("Special option 'Workers' was not an int.")
-			panic(ErrInvaidSpecialOptionType)
-		} else {
-			log.Warnf("This plugin forces the --workers flag to %d.", maxWorkers)
+		if w, ok := special["Workers"]; ok {
+			if maxWorkers, ok = w.(int); !ok {
+				log.Error("Special option 'Workers' was not an int.")
+				panic(ErrInvaidSpecialOptionType)
+			} else {
+				log.Warnf("This plugin forces the --workers flag to %d.", maxWorkers)
+			}
 		}
 	}
 

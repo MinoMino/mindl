@@ -83,11 +83,11 @@ func (opt *OptionsFlag) Type() string {
 }
 
 var (
-	options                                          OptionsFlag
-	workers                                          int
-	verbose, defaults, noprompt, zipit, printVersion bool
-	dldir                                            string
-	urls                                             []string
+	options                                                    OptionsFlag
+	workers                                                    int
+	verbose, defaults, noprompt, zipit, printVersion, override bool
+	dldir                                                      string
+	urls                                                       []string
 )
 
 func init() {
@@ -107,6 +107,10 @@ func init() {
 		"The directory in which to save the downloaded files.")
 	flag.BoolVar(&printVersion, "version", false,
 		"Print the program version.")
+	flag.BoolVar(&override, "override", false,
+		"Override special options, such as forcing the number of workers.")
+
+	flag.CommandLine.MarkHidden("override")
 }
 
 func main() {
@@ -187,7 +191,7 @@ func startDownloading(url string, plugin plugins.Plugin) {
 		}
 	}()
 
-	dls, err := dm.Download(url, workers, zipit)
+	dls, err := dm.Download(url, workers, zipit, override)
 	if err != nil {
 		log.Error(err)
 		return
