@@ -46,7 +46,11 @@ var Plugin = BookWalker{
 			C: "If set to true, save as PNG. Original images are in JPEG, so you can't escape some artifacts even with this on."},
 		&plugins.IntOption{K: "JPEGQuality", V: 95,
 			C: "Does nothing if Lossless is on. >95 not adviced, as it increases file size a ton with little improvement."},
-		&plugins.BoolOption{K: "Metadata", V: true},
+		//&plugins.BoolOption{K: "Metadata", V: true},
+
+		// Options to rate limit the plugin to prevent getting banned.
+		plugins.NewForceMaxWorkersOption(1),
+		&plugins.IntOption{K: "Delay", V: 5000, Hidden: true},
 	},
 }
 
@@ -131,6 +135,8 @@ func (bw *BookWalker) DownloadGenerator(url string) (dlgen func() plugins.Downlo
 	ds := descrambler{}
 
 	i := 0
+	last := time.Now()
+	interval := time.Duration(opts["Delay"].(int)) * time.Millisecond
 	// Generator.
 	dlgen = func() plugins.Downloader {
 		if i >= length {
@@ -140,6 +146,14 @@ func (bw *BookWalker) DownloadGenerator(url string) (dlgen func() plugins.Downlo
 		i++
 		// Downloader
 		return func(n int, rep plugins.Reporter) error {
+			// Check if we need to delay before starting.
+			delta := interval - time.Since(last)
+			if n != 0 && delta > 0 {
+				log.Debugf("Delaying %.2f seconds before starting the next download...", delta.Seconds())
+				time.Sleep(delta)
+			}
+			last = time.Now()
+
 			page := n + 1
 			// Each file has a list of pages. I have yet to see a file with multiple
 			// pages (which I call subpages), so virtually always it will have just

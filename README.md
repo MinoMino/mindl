@@ -71,7 +71,7 @@ also just run mindl without passing them and have it prompt you for them later.
 ## Supported Services
 * [eBookJapan](https://github.com/MinoMino/mindl/wiki/Supported-Services#ebookjapan)
 * [BookLive](https://github.com/MinoMino/mindl/wiki/Supported-Services#booklive)
-* [BookWalker](https://github.com/MinoMino/mindl/wiki/Supported-Services#bookwalker) (**read before using**)
+* [BookWalker](https://github.com/MinoMino/mindl/wiki/Supported-Services#bookwalker)
 
 # License
 mindl is licensed under AGPLv3. Refer to `LICENSE` for details.
