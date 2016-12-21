@@ -357,7 +357,7 @@ func (opt *ForceZipOption) Comment() string {
 	return "Force the download manager to zip the directories after the download finishes."
 }
 
-// An option to force the number of workers used by
+// An option to force the number of workers used by the download manager.
 type MaxWorkersOption struct {
 	IntOption
 }
