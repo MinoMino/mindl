@@ -48,9 +48,12 @@ var Plugin = BookWalker{
 			C: "Does nothing if Lossless is on. >95 not adviced, as it increases file size a ton with little improvement."},
 		//&plugins.BoolOption{K: "Metadata", V: true},
 
+		// Temporarily disable the plugin.
+		plugins.NewForceDisableOption("Causes account bans. Run with --override if you still want to use it."),
+
 		// Options to rate limit the plugin to prevent getting banned.
 		plugins.NewForceMaxWorkersOption(1),
-		&plugins.IntOption{K: "Delay", V: 5000, Hidden: true},
+		&plugins.IntOption{K: "Delay", V: 0, Hidden: true},
 	},
 }
 
@@ -148,7 +151,7 @@ func (bw *BookWalker) DownloadGenerator(url string) (dlgen func() plugins.Downlo
 		return func(n int, rep plugins.Reporter) error {
 			// Check if we need to delay before starting.
 			delta := interval - time.Since(last)
-			if n != 0 && delta > 0 {
+			if interval > 0 && n != 0 && delta > 0 {
 				log.Debugf("Delaying %.2f seconds before starting the next download...", delta.Seconds())
 				time.Sleep(delta)
 			}
