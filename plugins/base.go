@@ -358,31 +358,31 @@ func (opt *ForceZipOption) Comment() string {
 }
 
 // An option to force the number of workers used by the download manager.
-type MaxWorkersOption struct {
+type ForceMaxWorkersOption struct {
 	IntOption
 }
 
-func NewForceMaxWorkersOption(workers int) *MaxWorkersOption {
-	return &MaxWorkersOption{
+func NewForceMaxWorkersOption(workers int) *ForceMaxWorkersOption {
+	return &ForceMaxWorkersOption{
 		IntOption{
 			V: workers,
 		},
 	}
 }
 
-func (opt *MaxWorkersOption) Key() string {
+func (opt *ForceMaxWorkersOption) Key() string {
 	return "!Workers"
 }
 
-func (opt *MaxWorkersOption) IsRequired() bool {
+func (opt *ForceMaxWorkersOption) IsRequired() bool {
 	return false
 }
 
-func (opt *MaxWorkersOption) IsHidden() bool {
+func (opt *ForceMaxWorkersOption) IsHidden() bool {
 	return true
 }
 
-func (opt *MaxWorkersOption) Comment() string {
+func (opt *ForceMaxWorkersOption) Comment() string {
 	return "Force the maximum number of workers to a certain number."
 }
 
