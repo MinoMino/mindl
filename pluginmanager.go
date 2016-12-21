@@ -211,11 +211,11 @@ func pluginName(p Plugin) string {
 }
 
 // Get all special options set by the plugin.
-func GetSpecialOptions(p Plugin) map[string]interface{} {
-	res := make(map[string]interface{})
+func GetSpecialOptions(p Plugin) map[string]Option {
+	res := make(map[string]Option)
 	for _, opt := range p.Options() {
 		if strings.HasPrefix(opt.Key(), "!") {
-			res[opt.Key()[1:]] = opt.Value()
+			res[opt.Key()[1:]] = opt
 		}
 	}
 

@@ -306,7 +306,7 @@ func (dm *DownloadManager) Download(url string, maxWorkers int, zipit, override 
 	if !override {
 		special := GetSpecialOptions(dm.plugin)
 		if z, ok := special["Zip"]; ok {
-			if zipit, ok = z.(bool); !ok {
+			if zipit, ok = z.Value().(bool); !ok {
 				log.Error("Special option 'Zip' was not a bool.")
 				panic(ErrInvaidSpecialOptionType)
 			}
@@ -314,7 +314,7 @@ func (dm *DownloadManager) Download(url string, maxWorkers int, zipit, override 
 			log.Warnf("This plugin forces the --zip flag to %v.", zipit)
 		}
 		if w, ok := special["Workers"]; ok {
-			if maxWorkers, ok = w.(int); !ok {
+			if maxWorkers, ok = w.Value().(int); !ok {
 				log.Error("Special option 'Workers' was not an int.")
 				panic(ErrInvaidSpecialOptionType)
 			}
@@ -322,11 +322,14 @@ func (dm *DownloadManager) Download(url string, maxWorkers int, zipit, override 
 			log.Warnf("This plugin forces the --workers flag to %d.", maxWorkers)
 		}
 		if disable, ok := special["Disable"]; ok {
-			if _, ok = disable.(bool); !ok {
+			if _, ok = disable.Value().(bool); !ok {
 				log.Error("Special option 'Disable' was not an bool.")
 				panic(ErrInvaidSpecialOptionType)
 			}
 
+			if comment := disable.Comment(); comment != "" {
+				log.Warn("Plugin disabled: " + comment)
+			}
 			return nil, ErrDisabled
 		}
 	}
