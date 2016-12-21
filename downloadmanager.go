@@ -49,6 +49,7 @@ var (
 	ErrNotFile                 = errors.New("Plugin did not return the path to a file, but a directory.")
 	ErrInvaidSpecialOptionType = errors.New("A special option was not of the expected type.")
 	ErrInterrupted             = errors.New("The download failed to finish because of an interrupt.")
+	ErrDisabled                = errors.New("This plugin is temporarily disabled.")
 )
 
 type IODataHandler func(data []byte) error
@@ -308,17 +309,25 @@ func (dm *DownloadManager) Download(url string, maxWorkers int, zipit, override 
 			if zipit, ok = z.(bool); !ok {
 				log.Error("Special option 'Zip' was not a bool.")
 				panic(ErrInvaidSpecialOptionType)
-			} else {
-				log.Warnf("This plugin forces the --zip flag to %v.", zipit)
 			}
+
+			log.Warnf("This plugin forces the --zip flag to %v.", zipit)
 		}
 		if w, ok := special["Workers"]; ok {
 			if maxWorkers, ok = w.(int); !ok {
 				log.Error("Special option 'Workers' was not an int.")
 				panic(ErrInvaidSpecialOptionType)
-			} else {
-				log.Warnf("This plugin forces the --workers flag to %d.", maxWorkers)
 			}
+
+			log.Warnf("This plugin forces the --workers flag to %d.", maxWorkers)
+		}
+		if disable, ok := special["Disable"]; ok {
+			if _, ok = disable.(bool); !ok {
+				log.Error("Special option 'Disable' was not an bool.")
+				panic(ErrInvaidSpecialOptionType)
+			}
+
+			return nil, ErrDisabled
 		}
 	}
 

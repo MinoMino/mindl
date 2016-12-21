@@ -386,6 +386,34 @@ func (opt *ForceMaxWorkersOption) Comment() string {
 	return "Force the maximum number of workers to a certain number."
 }
 
+// A special option to disable a plugin. Since special options can be ignored,
+// this becomes useful if a plugin might need to be disabled temporarily, but
+// still allow people who know what they're doing to run it.
+type ForceDisableOption struct {
+	BoolOption
+}
+
+func NewForceDisableOption(comment string) *ForceDisableOption {
+	return &ForceDisableOption{
+		BoolOption{
+			V: true,
+			C: comment,
+		},
+	}
+}
+
+func (opt *ForceDisableOption) Key() string {
+	return "!Disable"
+}
+
+func (opt *ForceDisableOption) IsRequired() bool {
+	return false
+}
+
+func (opt *ForceDisableOption) IsHidden() bool {
+	return true
+}
+
 /*
    ==================================================
                          PLUGIN
